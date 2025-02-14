@@ -8,10 +8,6 @@ import requests
 from openai import OpenAI
 import argparse
 import time
-defense_prompt_path = "generate\\prompt\\defense_generate_prompt.json"
-fact_prompt_path = "generate\\prompt\\fact_generate_prompt.json"
-reasoning_prompt_path = "generate\\prompt\\reasoning_generate_prompt.json"
-judgement_prompt_path = "generate\\prompt\\judgement_generate_prompt.json"
 
 
 class GLM4_API:
@@ -118,7 +114,7 @@ class XIAOHONGSHU_API:
             raise Exception(response)
 
 class ChatClient:
-    def __init__(self, service, api_key = None):
+    def __init__(self, service, api_key):
         self.api_key = api_key
         self.service = service.lower()
         if self.service == "glm4":
@@ -136,29 +132,20 @@ class ChatClient:
         return self.client.chat(query, model)
 
 
-
-API_KEY_GLM = "2dc8291a45880410ee0796565841fd91.qjjMjdjdKoUK1Czp"
-API_KEY_OPENAI = "sk-UY2xHKB08Q8a4GQd1722Bc54683f417bBcB83fE7B18909Df"
-API_KEY_SILICONFLOW = "sk-eyyotkqvptowmokaebfgsduipwdmsfdrrqghhsrmpdykznci"
-API_KEY_SILICONFLOW_2 = "sk-eyyotkqvptowmokaebfgsduipwdmsfdrrqghhsrmpdykznci"
-API_KEY_SILICONFLOW_3 = "sk-uhhhzoyttaykqmiclodwygfyxiocuimnvqltfuypfoiulrym"
-API_KEY_XIAOHONGSHU = "QSTc69a8c91ce408a5ae919347d7df5c572"
-
-def create_chat_client(model_name):
+def create_chat_client(model_name,api_key):
     if model_name in ["glm-4-flash","glm-4"]:
         print("use glm")
-        return ChatClient("glm4", API_KEY_GLM)
+        return ChatClient("glm4", api_key)
     elif model_name in ["gpt-4o-mini","gpt-3.5-turbo","claude-3-5-sonnet-20240620"]:
         print("use openai")
-        return ChatClient("openai", API_KEY_OPENAI)
+        return ChatClient("openai", api_key)
     elif model_name in ["Qwen/Qwen2.5-7B-Instruct","meta-llama/Meta-Llama-3.1-8B-Instruct","Qwen/Qwen2.5-14B-Instruct"]:
         print("use silicon")
-        return ChatClient("siliconflow", API_KEY_SILICONFLOW_3)
+        return ChatClient("siliconflow", api_key)
     elif model_name in ["qwen2.5-72b-instruct","llama-3.3-70b-instruct"]:
-        return ChatClient("xiaohongshu",API_KEY_XIAOHONGSHU)
+        return ChatClient("xiaohongshu",api_key)
     else:
         raise ValueError(f"Unsupported model name: {model_name}")
-    
 
 def ask_prompt(json_object, chat_client, model_name):
     prompt = json_object['prompt']
@@ -189,7 +176,7 @@ def ask_prompt(json_object, chat_client, model_name):
                 break
     return {'id': json_object['id'], 'response': r}
 
-def ask_file(input_file_path, output_file_path,model_name):
+def ask_file(input_file_path, output_file_path,model_name,api_key):
     processed_ids = set()
 
     if os.path.exists(output_file_path):
@@ -203,7 +190,7 @@ def ask_file(input_file_path, output_file_path,model_name):
         json_data = [json.loads(line) for line in file.readlines()]
     
     results = []
-    chat_client = create_chat_client(model_name)
+    chat_client = create_chat_client(model_name,api_key)
     with tqdm(total=len(json_data) - len(processed_ids), desc="Processing") as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=25) as executor:
             futures = [executor.submit(ask_prompt, json_object, chat_client, model_name) for json_object in json_data if json_object['id'] not in processed_ids]
@@ -229,10 +216,12 @@ def ask_file(input_file_path, output_file_path,model_name):
 def main():
     parser = argparse.ArgumentParser(description='处理模型名称和任务名称')
     parser.add_argument('model_name', type=str, help='要使用的模型名称')
+    parser.add_argument('api_key', type=str, help='请输入API密钥')
     parser.add_argument('task_name', type=str, nargs='?', help='要处理的任务名称 (defense, fact, reasoning, judgement)，如果不指定则处理所有任务')
     args = parser.parse_args()
     model_name = args.model_name
     task_name = args.task_name
+    api_key = args.api_key
 
     # 定义输入和输出文件路径
     output_dir = f"generate/generated_data/{model_name}"
@@ -245,17 +234,10 @@ def main():
 
     for task in tasks:
         output_file_path = os.path.join(output_dir, f"{task}.json")
-        if task == 'defense':
-            ask_file(defense_prompt_path, output_file_path, model_name)
-        elif task == 'fact':
-            ask_file(fact_prompt_path, output_file_path, model_name)
-        elif task == 'reasoning':
-            ask_file(reasoning_prompt_path, output_file_path, model_name)
-        elif task == 'judgement':
-            ask_file(judgement_prompt_path, output_file_path, model_name)
+        ask_file(f"generate/prompt/{task}_generate_prompt.json", output_file_path, model_name,api_key)
 
 
 if __name__ == "__main__":
     main()
 
-# python generate/llm_generate.py glm-4-flash reasoning
+# python generate/llm_generate.py glm-4-flash API_KEY reasoning

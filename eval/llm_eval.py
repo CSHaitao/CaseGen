@@ -9,7 +9,6 @@ from openai import OpenAI
 import argparse
 import time
 
-API_KEY_OPENAI = "sk-PPRW7SVXDhZPOohEC0C3068fD25a4994A4Fc9434C78bAe1c"
 
 class OpenAI_API:
     def __init__(self, api_key):
@@ -63,9 +62,8 @@ def ask_prompt(json_object, chat_client):
 
     return {'id': json_object['id'], 'response': r}
 
-
-def ask_file(input_file_path, output_file_path):
-    chat_client = ChatClient(API_KEY_OPENAI)
+def ask_file(input_file_path, output_file_path,api_key):
+    chat_client = ChatClient(api_key)
     processed_ids = set()
 
     if os.path.exists(output_file_path):
@@ -100,15 +98,16 @@ def ask_file(input_file_path, output_file_path):
             out_file.write(json.dumps(result, ensure_ascii=False) + '\n')
     print(f"所有结构体按ID排序写入完成。")
 
-    
 
 def main():
     parser = argparse.ArgumentParser(description='Process model name')
     parser.add_argument('model_name', type=str, help='Name of the model to use')
+    parser.add_argument('api_key', type=str, help='请输入API密钥')
     parser.add_argument('task_name', type=str, nargs='?', help='要处理的任务名称 (defense, fact, reasoning, judgement)，如果不指定则处理所有任务')
     args = parser.parse_args()
     model_name = args.model_name
     task_name = args.task_name
+    api_key = args.api_key
 
     # Define input and output file paths
     input_dir = f"eval/prompt/{model_name}"
@@ -123,7 +122,7 @@ def main():
     for task in tasks:
         input_file_path = os.path.join(input_dir, f"{task}_eval_prompt.json")
         output_file_path = os.path.join(output_dir, f"{task}.json")
-        ask_file(input_file_path, output_file_path)
+        ask_file(input_file_path, output_file_path,api_key)
 
 
     
@@ -131,4 +130,4 @@ def main():
 if __name__ == "__main__":
     main()
     
-# python eval/llm_eval.py glm-4-flash defense
+# python eval/llm_eval.py glm-4-flash API_KEY defense
