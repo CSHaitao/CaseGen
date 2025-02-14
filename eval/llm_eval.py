@@ -9,7 +9,6 @@ from openai import OpenAI
 import argparse
 import time
 
-API_KEY_OPENAI = "sk-PPRW7SVXDhZPOohEC0C3068fD25a4994A4Fc9434C78bAe1c"
 
 class OpenAI_API:
     def __init__(self, api_key):
