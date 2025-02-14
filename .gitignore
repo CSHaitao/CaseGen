@@ -1,0 +1,5 @@
+# 忽略 py 文件夹
+py/
+
+# 忽略 excel 文件夹
+excel/
