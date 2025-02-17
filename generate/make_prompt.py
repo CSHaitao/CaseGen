@@ -43,7 +43,8 @@ if __name__ == "__main__":
         tasks = [task_name] 
 
     for task in tasks:
-        output_file_path = f"generate/prompt/{task_name}_generate_prompt.json"
+        output_file_path = f"generate/prompt/{task}_generate_prompt.json"
+        print(f"Prompt is written to {output_file_path}")
         make_prompt(input_file_path, output_file_path, task)
 
 
