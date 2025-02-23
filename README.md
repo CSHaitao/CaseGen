@@ -1,94 +1,129 @@
-# CaseGen
-一个多阶段法律案件文书生成的基准。
+<!--
+ * @Author: lihaitao
+ * @Date: 2025-02-23 17:40:07
+ * @LastEditors: Do not edit
+ * @LastEditTime: 2025-02-23 18:02:52
+ * @FilePath: /lht/GitHub_code/CaseGen/README.md
+-->
+<div align="center">
+<img src="./fig/CaseGen.png" style="width: 40%;height: 40%">
+<h1> CaseGen: A Benchmark for Multi-Stage Legal Case Documents Generation </h1>
+</div>
 
-## 任务介绍
-本项目的总体任务是生成并评价法律文书，确保生成的文书符合法律规范，并能够有效支持法律分析和裁判过程。生成的法律文书，包括以下四个主要类型：
 
-1. **答辩状 (Defense)**  
-   生成针对起诉状的答辩状，要求清晰、全面地回应原告的指控，并通过法律论证和证据支持辩护立场。
 
-2. **审理事实查明 (Fact)**  
-   根据起诉状、答辩状和相关证据，综合所有证据中的事实描述，生成法律文书中的"审理事实查明"段落，确保内容全面、表述准确。
 
-3. **判决说理 (Reasoning)**  
-   根据起诉状、答辩状和审理查明的事实，撰写法律文书的判决说理段落，进行全面的法律分析和推理。
+<p align="center">
+    📖 <a href="README_ZH.md">   中文</a> | <a href="README.md">English</a>
+</p>
 
-4. **判决结果 (Judgement)**  
-   根据审理事实和判决说理，撰写详细的判决结果，确保引用相关法律条文支持裁判结论，逻辑严密、语言规范。
 
-## 代码使用
+Welcome to **CaseGen**, a benchmark designed to evaluate large language models (LLMs) in the generation of legal case documents.
 
-### 生成文书
-在本项目中，可以使用预定义的模板来生成法律文书。以下是如何使用步骤：
+## Introduction
 
-1. **准备输入数据**  
-   将输入数据放在 `data/` 目录下，确保数据格式符合要求。
+**CaseGen** is a benchmark designed to evaluate large language models (LLMs) in the generation of legal case documents in the Chinese legal domain. The dataset includes 500 real-world legal case instances, each structured into seven sections: Prosecution, Defense, Evidence, Events, Facts, Reasoning, and Judgment. It supports four key tasks: drafting defense statements, writing trial facts, composing legal reasoning, and generating judgment results.
 
-2. **运行生成指令脚本**  
-   使用以下命令运行生成脚本，指定要处理的任务类型（如 defense, fact, reasoning, judgement）：
+This repository contains both the dataset and the code for evaluating the performance of LLMs in generating legal case documents. It provides a multi-stage generation task framework and an automated evaluation pipeline using LLMs as evaluators.
+
+
+## Task Description
+
+CaseGen includes four key tasks:
+1. **Drafting Defense Statements**: Respond to the prosecution’s claims based on evidence.
+2. **Writing Trial Facts**: Construct trial facts by verifying the true course of events.
+3. **Composing Legal Reasoning**: Analyze the case facts and apply legal principles for the court's reasoning.
+4. **Generating Judgment Results**: Formulate the final ruling based on trial facts and legal reasoning.
+
+
+## Data
+
+The data was collected from publicly available legal resources, with a strong emphasis on maintaining data integrity and quality. The case documents have been pre-processed and annotated by legal experts. Evidence details are annotated for completeness, and the data is formatted in JSON for ease of use.
+An example of a case is:
+```
+{
+    "id": 0,
+    "title": " ",
+    "full_text": " ",
+    "defense": " ",
+    "fact": " ",
+    "reasoning": " ",
+    "event": { },
+    "evidence": { }
+}
+```
+
+## Code
+
+The code in this repository allows users to: 
+- Generate case documents**: Using various LLMs to simulate legal case document drafting tasks. 
+- Evaluate model performance**: Using a custom-built LLM-as-a-judge evaluation framework, which includes task-specific scoring metrics.
+
+### Generating Legal Documents
+
+In this project, predefined templates are used to generate legal documents. Here are the steps to follow:
+
+1. **Prepare Input Data**  
+   Place the input data in the `data/` directory, ensuring the data format meets the required specifications.
+
+2. **Run the Generation Command Script**  
+   Use the following command to run the generation script and specify the task type (e.g., defense, fact, reasoning, judgment):
    ```bash
    python generate/make_prompt.py <task_name>
    ```
-   如果不指定任务名称，将处理所有任务。
+   If no task name is specified, all tasks will be processed.
 
-3. **查看生成的指令**  
-   生成的指令将保存在 `generate/prompt/` 目录下，文件名格式为 `<task_name>_generate_prompt.json`。
+The generated prompts will be saved in the `generate/prompt/` directory with the filename format `<task_name>_generate_prompt.json`.
 
-4. **调用 LLM 生成文书** 
-    在生成指令后，可以使用以下命令调用 `llm_generate.py` 来生成法律文书：
+3. **Call the LLM to Generate Documents** 
+    After generating the prompts, use the following command to call llm_generate.py to generate the legal documents.
     ```bash
     python generate/llm_generate.py <model_name> <API_KEY> <task_name>
     ```
-    - `<model_name>`: 要使用的模型名称，例如 `glm-4-flash`。
-    - `<API_KEY>`:  API 密钥。
-    - `<task_name>`: 要处理的任务名称（可选），如 `defense`, `fact`, `reasoning`, `judgement`。
-    如果不指定任务名称，将处理所有任务。
-    生成的法律文书将保存在 `generate/generated_data/<model_name>/` 目录下，文件名为 `<task_name>.json`。
 
-### 评价文书
-在本项目中，可以使用预定义的模板来评价生成的法律文书。以下是如何使用这些模板的步骤：
+    - `<model_name>`:  The name of the model to be used, e.g., `glm-4-flash`.
+    - `<API_KEY>`:  The API key.
+    - `<task_name>`: The task name (optional), such as defense, fact, reasoning, judgement. If no task name is specified, all tasks will be processed.
+    The generated legal documents will be saved in the `generate/generated_data/<model_name>/` directory with the filename `<task_name>.json`.
 
-1. **准备生成的文书**  
-   将生成的文书放在 `generate/generated_data/<model_name>/` 目录下，文件名为 `<task_name>.json`，确保数据格式符合要求。
+### Evaluating Legal Documents
+    In this project, predefined templates are used to evaluate generated legal documents. Follow these steps:
 
-2. **运行评价指令脚本**  
-   使用以下命令运行评价脚本，指定要处理的任务类型（如 defense, fact, reasoning, judgement）：
-   ```bash
-   python eval/make_prompt.py <model_name> <task_name>
-   ```
-   如果不指定任务名称，将处理所有任务。
+1. **Prepare the Generated Documents**
+    Place the generated documents in the `generate/generated_data/<model_name>/` directory, with filenames in the format `<task_name>.json`, ensuring the data format meets the required specifications.
 
-3. **查看生成的指令**  
-   生成的指令将保存在 `eval/prompt/<model_name>/` 目录下，文件名格式为 `<task_name>_eval_prompt.json`。
+2. **Run the Evaluation Command Script**
+    Use the following command to run the evaluation script and specify the task type (e.g., defense, fact, reasoning, judgment):
+    ```bash
+    python eval/make_prompt.py <model_name> <task_name>
+    ```
+    If no task name is specified, all tasks will be processed.
 
-4. **调用 LLM 评价文书**  
-   在生成指令后，可以使用以下命令调用 `llm_eval.py` 来评价法律文书：
-   ```bash
-   python generate/llm_eval.py <model_name> <API_KEY> <task_name>
-   ```
-   - `<model_name>`: 要被评价的模型名称，例如 `glm-4-flash`（用于定位输入文件）。
-   - `<API_KEY>`: API 密钥。
-   - `<task_name>`: 要处理的任务名称（可选），如 `defense`, `fact`, `reasoning`, `judgement`。
-   如果不指定任务名称，将处理所有任务。
-   评价的结果将保存在 `eval/llm_eval_result/<model_name>/` 目录下，文件名为 `<task_name>.json`。
+3. **View the Generated Prompts**
+    The generated prompts will be saved in the `eval/prompt/<model_name>/` directory with the filename format `<task_name>_eval_prompt.json`.
 
-5. **处理评价结果**  
-   使用 `llm_eval_handle.py` 脚本处理评价结果。该脚本的主要功能包括：
-   ```bash
-   python eval/llm_eval_handle.py <model_name> <task_name>
-   ```
-   如果不指定任务名称，将处理所有任务。
-   - 从评价结果中提取关键信息，并将其格式化为结构化数据。
-   - 计算各项评分的平均值和分布情况，便于分析生成文书的质量。
-   - 将处理后的结果保存到 Excel 文件中，方便后续查看和分析。
+4. **Call the LLM to Evaluate Documents**
+    After generating the prompts, use the following command to call `llm_eval.py` to evaluate the legal documents:
+    ```bash
+    python generate/llm_eval.py <model_name> <API_KEY> <task_name>
+    ```
+    The evaluation results will be saved in the `eval/llm_eval_result/<model_name>/` directory with the filename `<task_name>.json`.
+5. **Process the Evaluation Results**
+    Use the llm_eval_handle.py script to process the evaluation results. The main functions of this script include:
+    ```
+    python eval/llm_eval_handle.py <model_name> <task_name>
+    ```
+    If no task name is specified, all tasks will be processed. 
+    - Extract key information from the evaluation results and format it as structured data. 
+    - Calculate the average values and distribution of scores for easy analysis of the generated documents' quality. 
+    - Save the processed results to an Excel file for further viewing and analys
 
-6. **使用 BLEU、ROUGE 和 BERTScore 进行评估**  
-   使用以下命令运行评估脚本，计算生成文书与参考文书之间的 BLEU、ROUGE 和 BERTScore：
-   ```bash
-   python eval/bleu_rouge_bert_eval.py <model_name> <task_name>
-   ```
-   - `<model_name>`: 要评估的模型名称，例如 `glm-4-flash`。
-   - `<task_name>`: 要处理的任务名称（可选），如 `defense`, `fact`, `reasoning`, `judgement`。
-   评估结果将保存在 `eval/eval_result/<model_name>/` 目录下，文件名为 `<task_name>_eval_result.json`。
+6. **Evaluate Using BLEU, ROUGE, and BERTScore**
+    Run the evaluation script to calculate the BLEU, ROUGE, and BERTScore metrics between the generated documents and reference documents:
+    ```bash
+    python eval/bleu_rouge_bert_eval.py <model_name> <task_name>
+    ```
+    The evaluation results will be saved in the `eval/eval_result/<model_name>/` directory with the filename `<task_name>_eval_result.json`.
 
-通过以上步骤，可以评价生成的法律文书，并获取详细的评分和分析结果。
+## License
+CaseGen is released under the **CC BY-NC-SA 4.0** license. It is available for non-commercial academic use. Commercial use requires additional authorization.
