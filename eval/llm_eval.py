@@ -12,7 +12,7 @@ import time
 
 class OpenAI_API:
     def __init__(self, api_key):
-        self.base_url = "https://one-api.glm.ai:/v1"
+        self.base_url = ""
         self.client = OpenAI(
             base_url=self.base_url,
             api_key=api_key,
