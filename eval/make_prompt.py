@@ -8,7 +8,7 @@ import json
 import os
 import argparse
 data_len = 500
-original_data_path = "data/data_0130_500.json"
+original_data_path = "data/"
 
 def make_prompt(original_data_path, generated_file_path, output_file_path, content_type):
     original_file = open(original_data_path,'r', encoding='utf-8').readlines()
